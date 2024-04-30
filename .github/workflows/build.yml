@@ -73,12 +73,12 @@ jobs:
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: actions/cache/restore@v4
-        id: pre-cache-restore
+        id: build-cache
         with:
           path: |
             /home/runner/.cargo
             /home/runner/work/redlib/redlib/redlib/target
-          key: pre-cache-matrix-${{ matrix.arch }}-${{ hashFiles('./redlib/Cargo.toml') }}
+          key: build-cache-matrix-${{ matrix.arch }}-${{ hashFiles('./redlib/Cargo.toml') }}
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         run: |
@@ -87,12 +87,11 @@ jobs:
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: actions/cache/save@v4
-        id: pre-cache-save
         with:
           path: |
             /home/runner/.cargo
             /home/runner/work/redlib/redlib/redlib/target
-          key: ${{ steps.pre-cache-restore.outputs.cache-primary-key }}
+          key: ${{ steps.build-cache.outputs.cache-primary-key }}
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         run: tar czfv redlib-${{ matrix.target }}.tar.gz -C redlib/target/${{ matrix.target }}/release/ redlib
@@ -131,28 +130,26 @@ jobs:
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: actions/cache/restore@v4
-        id: build-cache-restore
+        id: image-cache
         with:
           path: .docker_cache
-          key: build-cache-matrix-${{ matrix.arch }}-${{ hashFiles('./Dockerfile') }}
+          key: build-cache-matrix-${{ matrix.arch }}
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: docker/build-push-action@v5
         with:
           push: true
+          tags: ${{ steps.image-meta.outputs.tags }}
           context: .
           cache-to: type=local,dest=.docker_cache/
           cache-from: type=local,src=.docker_cache/
           platforms: ${{ matrix.platform }}
-          tags: ${{ steps.image-meta.outputs.tags }}
-          labels: ${{ steps.image-meta.outputs.labels }}
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: actions/cache/save@v4
-        id: build-cache-save
         with:
           path: .docker_cache
-          key: ${{ steps.build-cache-restore.outputs.cache-primary-key }}
+          key: ${{ steps.image-cache.outputs.cache-primary-key }}
 
   merge:
     if: ${{ needs.build.outputs.continue == 'true' }}
@@ -164,7 +161,7 @@ jobs:
       VERSION: ${{ needs.build.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with: { fetch-depth: 0 } # Need history to push to repo
 
       - uses: docker/login-action@v3
         with:
