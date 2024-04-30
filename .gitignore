@@ -1,0 +1,3 @@
+redlib/
+.docker_cache/
+.env
