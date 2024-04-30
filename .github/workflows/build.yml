@@ -135,7 +135,7 @@ jobs:
           path: .docker_cache
           # Not a fan of having to use the Dockerfile as a reference but as of the time of 
           # writing, GitHub doesn't allow us to update existing runner caches of the same name
-          key: build-cache-matrix-${{ matrix.arch }}-${{ hashFiles('./redlib/Cargo.toml') }}
+          key: build-cache-matrix-${{ matrix.arch }}-${{ hashFiles('./Dockerfile') }}
 
       - if: ${{ steps.meta.outputs.continue == 'true' }}
         uses: docker/build-push-action@v5
