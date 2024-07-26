@@ -115,7 +115,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: image-meta
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/kankerdev/redlib
           tags: |
             type=raw,value=${{ matrix.arch }}-${{ steps.meta.outputs.version }},enable={{is_default_branch}}
             type=raw,value=${{ matrix.arch }}-${{ steps.meta.outputs.commit }},enable={{is_default_branch}}
@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build ]
     env:
-      IMAGE: ghcr.io/${{ github.repository }}
+      IMAGE: ghcr.io/kankerdev/redlib
       COMMIT: ${{ needs.build.outputs.commit }}
       VERSION: ${{ needs.build.outputs.version }}
     steps:
